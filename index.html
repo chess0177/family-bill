@@ -27,7 +27,7 @@ body{
   padding:16px;
   margin-bottom:12px;
   box-shadow:0 6px 18px rgba(0,0,0,.06);
-  overflow:hidden;
+  overflow-x:auto;
 }
 
 h2{text-align:center;}
@@ -42,6 +42,16 @@ input,select{
   border:1px solid #ddd;
   font-size:16px;
   box-sizing:border-box;
+}
+
+/* 📅 防止月份換行 */
+select{
+  white-space:nowrap;
+  min-width:140px;
+}
+
+option{
+  white-space:nowrap;
 }
 
 button{
@@ -62,6 +72,7 @@ table{
   width:100%;
   border-collapse:collapse;
   font-size:13px;
+  min-width:650px;
 }
 
 th,td{
@@ -139,9 +150,7 @@ onSnapshot,
 query,
 orderBy,
 deleteDoc,
-doc,
-getDocs,
-where
+doc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -162,61 +171,60 @@ let last=null;
 /* 📅 年月初始化 */
 function init(){
 
-  const y=new Date().getFullYear();
-  const m=new Date().getMonth()+1;
+const y=new Date().getFullYear();
+const m=new Date().getMonth()+1;
 
-  year.value=y;
+year.value=y;
 
-  const list=[
-    "1-2月","3-4月","5-6月",
-    "7-8月","9-10月","11-12月"
-  ];
+const list=[
+"1-2月","3-4月","5-6月",
+"7-8月","9-10月","11-12月"
+];
 
-  list.forEach((t,i)=>{
-    const o=document.createElement("option");
-    o.value=t;
-    o.textContent=t;
-    if(i===Math.floor((m-1)/2)) o.selected=true;
-    month.appendChild(o);
-  });
+list.forEach((t,i)=>{
+const o=document.createElement("option");
+o.value=t;
+o.textContent=t;
+if(i===Math.floor((m-1)/2)) o.selected=true;
+month.appendChild(o);
+});
 }
 
 /* 🧮 計算 */
 window.calculate=function(){
 
-  const w=+water.value||0;
-  const e=+electric.value||0;
-  const g=+gas.value||0;
+const w=+water.value||0;
+const e=+electric.value||0;
+const g=+gas.value||0;
 
-  const mg=8391;
-  const car=1000;
-  const moto=100;
+const mg=8391;
+const car=1000;
+const moto=100;
 
-  const total=w+e+g+mg;
-  const base=total-car;
-  const per=base/3;
+const total=w+e+g+mg;
+const base=total-car;
+const per=base/3;
 
-  const b1=per+moto;
-  const b2=per+moto;
-  const mom=(w+e+g)-car;
-  const me=per-moto*2;
+const b1=per+moto;
+const b2=per+moto;
+const mom=(w+e+g)-car;
+const me=per-moto*2;
 
-  last={
-    year:Number(year.value),
-    month:month.value,
-    total:w+e+g,
-    mom,b1,b2,me
-  };
+last={
+year:Number(year.value),
+month:month.value,
+total:w+e+g,
+mom,b1,b2,me
+};
 
-  /* 📊 四行顯示 */
-  result.innerHTML=`
-  <div style="line-height:1.8">
-    <div>👩 媽媽：${mom}</div>
-    <div>👨‍🦱 大哥：${b1}</div>
-    <div>👨‍🦱 二哥：${b2}</div>
-    <div>🙋 我：${me}</div>
-  </div>
-  `;
+result.innerHTML=`
+<div style="line-height:1.8">
+<div>👩 媽媽：${mom}</div>
+<div>👨‍🦱 大哥：${b1}</div>
+<div>👨‍🦱 二哥：${b2}</div>
+<div>🙋 我：${me}</div>
+</div>
+`;
 };
 
 /* ☁️ 存雲端 */
@@ -252,7 +260,7 @@ snap.forEach(d=>data.push({...d.data(),id:d.id}));
 render(data);
 });
 
-/* 🧾 表格 */
+/* 📊 表格 */
 function render(data){
 table.innerHTML="";
 data.forEach(r=>{
@@ -265,7 +273,13 @@ table.innerHTML+=`
 <td>${r.b1}</td>
 <td>${r.b2}</td>
 <td>${r.me}</td>
-<td><button onclick="del('${r.id}')">刪</button></td>
+<td>
+<button onclick="del('${r.id}')"
+style="background:#e53935;color:white;border:none;
+padding:6px 10px;border-radius:8px;font-size:12px;">
+刪
+</button>
+</td>
 </tr>`;
 });
 }
