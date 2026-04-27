@@ -29,13 +29,7 @@ body{
   box-shadow:0 6px 18px rgba(0,0,0,.06);
 }
 
-h2{
-  text-align:center;
-}
-
-label{
-  font-size:14px;
-}
+h2{text-align:center;}
 
 input,select{
   width:100%;
@@ -61,18 +55,26 @@ button{
 .save{background:#ff9800;}
 .copy{background:#2d7ff9;}
 
-.result-box{
-  line-height:1.8;
-  font-size:15px;
+/* 📦 年份區塊 */
+.year-block{
+  margin-bottom:12px;
+  border-radius:14px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
 }
 
-/* 卡片紀錄 */
-.record{
-  background:#fff;
-  margin-bottom:10px;
+.year-header{
   padding:12px;
-  border-radius:14px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  font-weight:bold;
+  background:#e8f5e9;
+  cursor:pointer;
+}
+
+/* 📄 月份卡片 */
+.record{
+  padding:12px;
+  border-top:1px solid #eee;
   font-size:14px;
   line-height:1.6;
 }
@@ -85,7 +87,6 @@ button{
   border:none;
   padding:10px;
   border-radius:10px;
-  font-size:14px;
 }
 </style>
 </head>
@@ -117,13 +118,13 @@ button{
 
 <!-- 結果 -->
 <div class="card">
-<div id="result" class="result-box"></div>
+<div id="result"></div>
 
 <button class="save" onclick="saveCloud()">儲存雲端</button>
 <button class="copy" onclick="copyMsg()">複製給哥哥</button>
 </div>
 
-<!-- 紀錄 -->
+<!-- 📊 年份分類紀錄 -->
 <div id="list"></div>
 
 </div>
@@ -157,24 +158,18 @@ const col = collection(db,"bills");
 
 let last=null;
 
-/* 📅 初始化年月 */
+/* 📅 初始化 */
 function init(){
-
 const y=new Date().getFullYear();
-const m=new Date().getMonth()+1;
-
 year.value=y;
 
-const list=[
-"1-2月","3-4月","5-6月",
-"7-8月","9-10月","11-12月"
-];
+const list=["1-2月","3-4月","5-6月","7-8月","9-10月","11-12月"];
 
 list.forEach((t,i)=>{
 const o=document.createElement("option");
 o.value=t;
 o.textContent=t;
-if(i===Math.floor((m-1)/2)) o.selected=true;
+if(i===Math.floor(new Date().getMonth()/2)) o.selected=true;
 month.appendChild(o);
 });
 }
@@ -207,12 +202,10 @@ mom,b1,b2,me
 };
 
 result.innerHTML=`
-<div class="result-box">
 👩 媽媽：${mom}<br>
 👨‍🦱 大哥：${b1}<br>
 👨‍🦱 二哥：${b2}<br>
 🙋 我：${me}
-</div>
 `;
 };
 
@@ -249,15 +242,36 @@ snap.forEach(d=>data.push({...d.data(),id:d.id}));
 render(data);
 });
 
-/* 📊 卡片式紀錄 */
+/* 📊 年份分類 */
 function render(data){
+
+const grouped={};
+
+data.forEach(r=>{
+if(!grouped[r.year]) grouped[r.year]=[];
+grouped[r.year].push(r);
+});
 
 list.innerHTML="";
 
-data.forEach(r=>{
+Object.keys(grouped)
+.sort((a,b)=>b-a)
+.forEach(year=>{
+
 list.innerHTML+=`
+<div class="year-block">
+
+<div class="year-header"
+onclick="this.nextElementSibling.style.display =
+this.nextElementSibling.style.display==='none'?'block':'none'">
+📅 ${year} ▼（點擊展開/收合）
+</div>
+
+<div class="year-body">
+
+${grouped[year].map(r=>`
 <div class="record">
-<b>📅 ${r.year} ${r.month}</b><br>
+📌 ${r.month}<br>
 💰 總：${r.total}<br>
 👩 媽媽：${r.mom}<br>
 👨‍🦱 大哥：${r.b1}<br>
@@ -268,6 +282,11 @@ list.innerHTML+=`
 onclick="del('${r.id}')">
 刪除
 </button>
+</div>
+`).join("")}
+
+</div>
+
 </div>
 `;
 });
