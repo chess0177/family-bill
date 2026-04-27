@@ -27,12 +27,15 @@ body{
   padding:16px;
   margin-bottom:12px;
   box-shadow:0 6px 18px rgba(0,0,0,.06);
-  overflow-x:auto;
 }
 
-h2{text-align:center;}
+h2{
+  text-align:center;
+}
 
-label{font-size:14px;}
+label{
+  font-size:14px;
+}
 
 input,select{
   width:100%;
@@ -42,16 +45,6 @@ input,select{
   border:1px solid #ddd;
   font-size:16px;
   box-sizing:border-box;
-}
-
-/* 📅 防止月份換行 */
-select{
-  white-space:nowrap;
-  min-width:140px;
-}
-
-option{
-  white-space:nowrap;
 }
 
 button{
@@ -68,20 +61,32 @@ button{
 .save{background:#ff9800;}
 .copy{background:#2d7ff9;}
 
-table{
+.result-box{
+  line-height:1.8;
+  font-size:15px;
+}
+
+/* 卡片紀錄 */
+.record{
+  background:#fff;
+  margin-bottom:10px;
+  padding:12px;
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  font-size:14px;
+  line-height:1.6;
+}
+
+.delete-btn{
+  margin-top:8px;
   width:100%;
-  border-collapse:collapse;
-  font-size:13px;
-  min-width:650px;
+  background:#e53935;
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+  font-size:14px;
 }
-
-th,td{
-  padding:8px;
-  border-bottom:1px solid #eee;
-  text-align:center;
-}
-
-th{background:#f7f7f7;}
 </style>
 </head>
 
@@ -112,30 +117,14 @@ th{background:#f7f7f7;}
 
 <!-- 結果 -->
 <div class="card">
-<div id="result"></div>
+<div id="result" class="result-box"></div>
 
 <button class="save" onclick="saveCloud()">儲存雲端</button>
 <button class="copy" onclick="copyMsg()">複製給哥哥</button>
 </div>
 
-<!-- 表格 -->
-<div class="card">
-<table>
-<thead>
-<tr>
-<th>年</th>
-<th>月</th>
-<th>總</th>
-<th>媽</th>
-<th>大哥</th>
-<th>二哥</th>
-<th>你</th>
-<th>刪</th>
-</tr>
-</thead>
-<tbody id="table"></tbody>
-</table>
-</div>
+<!-- 紀錄 -->
+<div id="list"></div>
 
 </div>
 
@@ -168,7 +157,7 @@ const col = collection(db,"bills");
 
 let last=null;
 
-/* 📅 年月初始化 */
+/* 📅 初始化年月 */
 function init(){
 
 const y=new Date().getFullYear();
@@ -218,11 +207,11 @@ mom,b1,b2,me
 };
 
 result.innerHTML=`
-<div style="line-height:1.8">
-<div>👩 媽媽：${mom}</div>
-<div>👨‍🦱 大哥：${b1}</div>
-<div>👨‍🦱 二哥：${b2}</div>
-<div>🙋 我：${me}</div>
+<div class="result-box">
+👩 媽媽：${mom}<br>
+👨‍🦱 大哥：${b1}<br>
+👨‍🦱 二哥：${b2}<br>
+🙋 我：${me}
 </div>
 `;
 };
@@ -260,27 +249,27 @@ snap.forEach(d=>data.push({...d.data(),id:d.id}));
 render(data);
 });
 
-/* 📊 表格 */
+/* 📊 卡片式紀錄 */
 function render(data){
-table.innerHTML="";
+
+list.innerHTML="";
+
 data.forEach(r=>{
-table.innerHTML+=`
-<tr>
-<td>${r.year}</td>
-<td>${r.month}</td>
-<td>${r.total}</td>
-<td>${r.mom}</td>
-<td>${r.b1}</td>
-<td>${r.b2}</td>
-<td>${r.me}</td>
-<td>
-<button onclick="del('${r.id}')"
-style="background:#e53935;color:white;border:none;
-padding:6px 10px;border-radius:8px;font-size:12px;">
-刪
+list.innerHTML+=`
+<div class="record">
+<b>📅 ${r.year} ${r.month}</b><br>
+💰 總：${r.total}<br>
+👩 媽媽：${r.mom}<br>
+👨‍🦱 大哥：${r.b1}<br>
+👨‍🦱 二哥：${r.b2}<br>
+🙋 我：${r.me}<br>
+
+<button class="delete-btn"
+onclick="del('${r.id}')">
+刪除
 </button>
-</td>
-</tr>`;
+</div>
+`;
 });
 }
 
