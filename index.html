@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>17算錢錢</title>
 
 <link rel="manifest" href="manifest.json">
@@ -23,7 +23,7 @@ body{
   font-family:-apple-system,"Noto Sans TC";
   background:#e9eef5;
   margin:0;
-  padding:12px;
+  padding:calc(12px + env(safe-area-inset-top)) 12px 12px 12px;
   color:#3f4b5a;
   min-height:100vh;
   min-height:100dvh;
@@ -31,7 +31,7 @@ body{
   -webkit-overflow-scrolling:touch;
 }
 
-/* 🔒 鎖死背景層（避免 iOS 露底色） */
+/* 🔒 鎖死背景層（避免 iOS 劉海/底部露色） */
 body::before{
   content:"";
   position:fixed;
@@ -40,7 +40,6 @@ body::before{
   z-index:-2;
 }
 
-/* 保留你的淡背景圖（如果要更穩可以刪掉這段） */
 body::after{
   content:"";
   position:fixed;
@@ -223,16 +222,18 @@ function init(){
 
 window.calculate=function(){
 let w=+water.value||0,e=+electric.value||0,g=+gas.value||0;
-let total=w+e+g+8391,base=total-1000,per=base/3;
+let total=w+e+g;
+let base=total-1000;
+let per=base/3;
 let b=per+100;
 
 last={
-year:+year.value,
-month:month.value,
-total:w+e+g,
-mom:(w+e+g)-1000,
-b1:b,b2:b,
-me:per-200
+  year:+year.value,
+  month:month.value,
+  total,
+  mom:total-1000,
+  b1:b,b2:b,
+  me:per-200
 };
 
 result.innerHTML=`
