@@ -13,6 +13,12 @@
   box-sizing:border-box;
 }
 
+html,body{
+  height:100%;
+  background:#e9eef5;
+  margin:0;
+}
+
 body{
   font-family:-apple-system,"Noto Sans TC";
   background:#e9eef5;
@@ -20,6 +26,8 @@ body{
   padding:12px;
   color:#3f4b5a;
   min-height:100vh;
+  overscroll-behavior:none;
+  -webkit-overflow-scrolling:touch;
 }
 
 body::before{
@@ -110,7 +118,6 @@ button{
   cursor:pointer;
 }
 
-/* 🔧 修正：減少空白，讓卡片更緊湊 */
 .records-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
