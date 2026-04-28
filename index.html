@@ -3,17 +3,33 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>算錢錢 分錢錢</title>
+<title>17算錢錢</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4CAF50">
 
 <style>
+*{
+  transition:.2s;
+  box-sizing:border-box;
+}
+
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC";
-  background:#f2f4f8;
+  font-family:-apple-system,"Noto Sans TC";
+  background: linear-gradient(180deg,#e9eef5,#dfe7f1,#f3f6fa);
   margin:0;
   padding:12px;
+  color:#3f4b5a;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470');
+  background-size:cover;
+  background-position:center;
+  opacity:0.06;
+  z-index:-1;
 }
 
 .container{
@@ -22,81 +38,123 @@ body{
 }
 
 .card{
-  background:#fff;
-  border-radius:16px;
+  background:#ffffffdd;
+  backdrop-filter:blur(6px);
+  border-radius:18px;
   padding:16px;
   margin-bottom:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  box-shadow:0 6px 20px rgba(80,100,130,0.12);
 }
 
-h2{text-align:center;}
+h2{
+  text-align:center;
+  color:#6c7f99;
+  letter-spacing:1px;
+  font-weight:700;
+}
 
 input,select{
   width:100%;
   padding:12px;
   margin:6px 0 12px;
-  border-radius:10px;
-  border:1px solid #ddd;
+  border-radius:12px;
+  border:1px solid #d7dde6;
+  background:#f8fafc;
   font-size:16px;
-  box-sizing:border-box;
 }
 
 button{
   width:100%;
   padding:12px;
   border:none;
-  border-radius:10px;
-  color:#fff;
+  border-radius:12px;
+  color:white;
   font-size:15px;
+  font-weight:600;
+  letter-spacing:.5px;
+  -webkit-font-smoothing: antialiased;
   margin-top:6px;
 }
 
-.calc{background:#4CAF50;}
-.save{background:#ff9800;}
-.copy{background:#2d7ff9;}
+.calc{
+  background:#6f86a6;
+  color:#f8fbff;
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  font-weight:700;
+}
+.save{
+  background:#8fa6bf;
+  color:#f8fbff;
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  font-weight:700;
+}
+.copy{
+  background:#5f7ea3;
+  color:#f8fbff;
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  font-weight:700;
+}
 
-/* 📦 年份區塊 */
 .year-block{
   margin-bottom:12px;
-  border-radius:14px;
+  border-radius:16px;
   overflow:hidden;
-  background:#fff;
-  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  background:#ffffffdd;
 }
 
 .year-header{
   padding:12px;
-  font-weight:bold;
-  background:#e8f5e9;
+  background:#e4ebf5;
+  font-weight:700;
   cursor:pointer;
 }
 
-/* 📄 月份卡片 */
+/* 🔧 修正：減少空白，讓卡片更緊湊 */
+.records-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px;
+  padding:10px;
+}
+
+@media (max-width:480px){
+  .records-grid{grid-template-columns:1fr;}
+}
+
 .record{
-  padding:12px;
-  border-top:1px solid #eee;
-  font-size:14px;
+  padding:10px;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  font-size:13px;
   line-height:1.6;
 }
 
-.delete-btn{
-  margin-top:8px;
-  width:100%;
-  background:#e53935;
-  color:white;
-  border:none;
-  padding:10px;
-  border-radius:10px;
+.record-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
 }
+
+.delete-btn{
+  background:#d96c6c;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  width:auto;
+  margin:0;
+  white-space:nowrap;
+}
+
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<!-- 輸入 -->
 <div class="card">
-<h2>算錢錢 分錢錢</h2>
+<h2>17算錢錢</h2>
 
 <label>年份</label>
 <input id="year" type="number">
@@ -116,190 +174,105 @@ button{
 <button class="calc" onclick="calculate()">計算</button>
 </div>
 
-<!-- 結果 -->
 <div class="card">
 <div id="result"></div>
 
-<button class="save" onclick="saveCloud()">儲存雲端</button>
-<button class="copy" onclick="copyMsg()">複製給哥哥</button>
+<button class="save" onclick="saveCloud()">儲存</button>
+<button class="copy" onclick="copyMsg()">複製</button>
 </div>
 
-<!-- 📊 年份分類紀錄 -->
 <div id="list"></div>
 
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-onSnapshot,
-query,
-orderBy,
-deleteDoc,
-doc
-} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getFirestore,collection,addDoc,onSnapshot,query,orderBy,deleteDoc,doc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "family-bill-461b0.firebaseapp.com",
-projectId: "family-bill-461b0",
-storageBucket: "family-bill-461b0.firebasestorage.app",
-messagingSenderId: "1066974635929",
-appId: "1:1066974635929:web:d2342b4106f216d6989508"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const col = collection(db,"bills");
+const app=initializeApp({projectId:"family-bill-461b0"});
+const db=getFirestore(app);
+const col=collection(db,"bills");
 
 let last=null;
 
-/* 📅 初始化 */
 function init(){
-const y=new Date().getFullYear();
-year.value=y;
-
-const list=["1-2月","3-4月","5-6月","7-8月","9-10月","11-12月"];
-
-list.forEach((t,i)=>{
-const o=document.createElement("option");
-o.value=t;
-o.textContent=t;
-if(i===Math.floor(new Date().getMonth()/2)) o.selected=true;
-month.appendChild(o);
-});
+  year.value=new Date().getFullYear();
+  ["1-2月","3-4月","5-6月","7-8月","9-10月","11-12月"]
+  .forEach((t,i)=>{
+    let o=document.createElement("option");
+    o.value=t;o.textContent=t;
+    if(i===Math.floor(new Date().getMonth()/2))o.selected=true;
+    month.appendChild(o);
+  });
 }
 
-/* 🧮 計算 */
 window.calculate=function(){
-
-const w=+water.value||0;
-const e=+electric.value||0;
-const g=+gas.value||0;
-
-const mg=8391;
-const car=1000;
-const moto=100;
-
-const total=w+e+g+mg;
-const base=total-car;
-const per=base/3;
-
-const b1=per+moto;
-const b2=per+moto;
-const mom=(w+e+g)-car;
-const me=per-moto*2;
+let w=+water.value||0,e=+electric.value||0,g=+gas.value||0;
+let total=w+e+g+8391,base=total-1000,per=base/3;
+let b=per+100;
 
 last={
-year:Number(year.value),
+year:+year.value,
 month:month.value,
 total:w+e+g,
-mom,b1,b2,me
+mom:(w+e+g)-1000,
+b1:b,b2:b,
+me:per-200
 };
 
 result.innerHTML=`
-👩 媽媽：${mom}<br>
-👨‍🦱 大哥：${b1}<br>
-👨‍🦱 二哥：${b2}<br>
-🙋 我：${me}
+👩 媽媽：<b>${last.mom}</b><br>
+👨‍🦱 大哥：<b>${b}</b><br>
+👨‍🦱 二哥：<b>${b}</b><br>
+🙋 我：<b>${last.me}</b>
 `;
 };
 
-/* ☁️ 存雲端 */
-window.saveCloud=async function(){
-if(!last)return;
-await addDoc(col,{...last,time:Date.now()});
-alert("已存雲端");
-};
+window.saveCloud=()=>last&&addDoc(col,{...last,time:Date.now()});
+window.copyMsg=()=>navigator.clipboard.writeText(`${last.year} ${last.month}\n大哥 ${last.b1}\n二哥 ${last.b2}`);
+window.del=id=>deleteDoc(doc(db,"bills",id));
 
-/* 📋 複製 */
-window.copyMsg=function(){
-if(!last)return;
-
-navigator.clipboard.writeText(
-`${last.year} ${last.month}
-大哥 ${last.b1}
-二哥 ${last.b2}`
-);
-
-alert("已複製");
-};
-
-/* 🗑 刪除 */
-window.del=async function(id){
-if(!confirm("確定刪除？"))return;
-await deleteDoc(doc(db,"bills",id));
-};
-
-/* 📥 即時同步 */
 onSnapshot(query(col,orderBy("time","desc")),snap=>{
-const data=[];
-snap.forEach(d=>data.push({...d.data(),id:d.id}));
-render(data);
+let d=[];snap.forEach(x=>d.push({...x.data(),id:x.id}));render(d);
 });
 
-/* 📊 年份分類 */
 function render(data){
-
-const grouped={};
-
-data.forEach(r=>{
-if(!grouped[r.year]) grouped[r.year]=[];
-grouped[r.year].push(r);
-});
+let g={};
+data.forEach(r=>(g[r.year]=g[r.year]||[]).push(r));
 
 list.innerHTML="";
-
-Object.keys(grouped)
-.sort((a,b)=>b-a)
-.forEach(year=>{
-
+Object.keys(g).sort((a,b)=>b-a).forEach(y=>{
 list.innerHTML+=`
 <div class="year-block">
-
 <div class="year-header"
-onclick="this.nextElementSibling.style.display =
-this.nextElementSibling.style.display==='none'?'block':'none'">
-📅 ${year} ▼（點擊展開/收合）
+onclick="this.nextElementSibling.style.display=
+this.nextElementSibling.style.display==='none'?'grid':'none'">
+📅 ${y}
+</div>
+<div class="records-grid">
+${g[y].map(r=>`
+<div class="record">
+
+<div class="record-header">
+<b>📌 ${r.month}</b>
+<button class="delete-btn" onclick="del('${r.id}')">刪除</button>
 </div>
 
-<div class="year-body">
+💰 水電瓦斯：<b>${r.total}</b><br>
+👩 媽媽：<b>${r.mom}</b><br>
+👨‍🦱 大哥：<b>${r.b1}</b><br>
+👨‍🦱 二哥：<b>${r.b2}</b><br>
+🙋 我：<b>${r.me}</b>
 
-${grouped[year].map(r=>`
-<div class="record">
-📌 ${r.month}<br>
-💰 總：${r.total}<br>
-👩 媽媽：${r.mom}<br>
-👨‍🦱 大哥：${r.b1}<br>
-👨‍🦱 二哥：${r.b2}<br>
-🙋 我：${r.me}<br>
-
-<button class="delete-btn"
-onclick="del('${r.id}')">
-刪除
-</button>
 </div>
 `).join("")}
-
 </div>
-
 </div>
 `;
 });
 }
 
 init();
-
-</script>
-
-<script>
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('sw.js');
-}
 </script>
 
 </body>
