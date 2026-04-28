@@ -11,12 +11,12 @@
 *{
   transition:.2s;
   box-sizing:border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-html,body{
+html{
   height:100%;
   background:#e9eef5;
-  margin:0;
 }
 
 body{
@@ -26,11 +26,22 @@ body{
   padding:12px;
   color:#3f4b5a;
   min-height:100vh;
+  min-height:100dvh;
   overscroll-behavior:none;
   -webkit-overflow-scrolling:touch;
 }
 
+/* 🔒 鎖死背景層（避免 iOS 露底色） */
 body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:#e9eef5;
+  z-index:-2;
+}
+
+/* 保留你的淡背景圖（如果要更穩可以刪掉這段） */
+body::after{
   content:"";
   position:fixed;
   inset:0;
@@ -79,9 +90,8 @@ button{
   border-radius:12px;
   color:white;
   font-size:15px;
-  font-weight:600;
+  font-weight:700;
   letter-spacing:.5px;
-  -webkit-font-smoothing: antialiased;
   margin-top:6px;
 }
 
@@ -89,19 +99,16 @@ button{
   background:#6f86a6;
   color:#f8fbff;
   text-shadow:0 1px 2px rgba(0,0,0,.25);
-  font-weight:700;
 }
 .save{
   background:#8fa6bf;
   color:#f8fbff;
   text-shadow:0 1px 2px rgba(0,0,0,.25);
-  font-weight:700;
 }
 .copy{
   background:#5f7ea3;
   color:#f8fbff;
   text-shadow:0 1px 2px rgba(0,0,0,.25);
-  font-weight:700;
 }
 
 .year-block{
