@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#e9eef5">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>17算錢錢</title>
 
 <link rel="manifest" href="manifest.json">
@@ -17,6 +19,18 @@
 html{
   height:100%;
   background:#e9eef5;
+}
+
+/* 🔒 強制填滿劉海區（iOS 狀態列） */
+html::before{
+  content:"";
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:env(safe-area-inset-top);
+  background:#e9eef5;
+  z-index:9999;
 }
 
 body{
