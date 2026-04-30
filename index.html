@@ -23,7 +23,6 @@ html{
   background:#e9eef5;
 }
 
-/* 🔒 強制填滿劉海區（iOS 狀態列） */
 html::before{
   content:"";
   position:fixed;
@@ -47,7 +46,6 @@ body{
   -webkit-overflow-scrolling:touch;
 }
 
-/* 🔒 鎖死背景層（避免 iOS 劉海/底部露色） */
 body::before{
   content:"";
   position:fixed;
@@ -110,22 +108,47 @@ button{
   margin-top:6px;
 }
 
-.calc{
-  background:#6f86a6;
-  color:#f8fbff;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
-}
-.save{
-  background:#8fa6bf;
-  color:#f8fbff;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
-}
-.copy{
-  background:#5f7ea3;
-  color:#f8fbff;
-  text-shadow:0 1px 2px rgba(0,0,0,.25);
+button:active{
+  transform:scale(0.96);
+  filter:brightness(0.95);
 }
 
+.calc{background:#6f86a6;}
+.save{background:#8fa6bf;}
+.copy{background:#5f7ea3;}
+
+.record{
+  padding:10px;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  font-size:13px;
+  line-height:1.6;
+  margin-bottom:8px;
+}
+
+/* toast */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#5f7ea3;
+  color:white;
+  padding:10px 16px;
+  border-radius:999px;
+  font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(-6px);
+}
+
+/* record layout */
 .year-block{
   margin-bottom:12px;
   border-radius:16px;
@@ -151,15 +174,6 @@ button{
   .records-grid{grid-template-columns:1fr;}
 }
 
-.record{
-  padding:10px;
-  border-radius:12px;
-  background:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.08);
-  font-size:13px;
-  line-height:1.6;
-}
-
 .record-header{
   display:flex;
   justify-content:space-between;
@@ -176,11 +190,11 @@ button{
   margin:0;
   white-space:nowrap;
 }
-
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <div class="card">
@@ -215,6 +229,8 @@ button{
 
 </div>
 
+<div id="toast" class="toast">已複製</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import { getFirestore,collection,addDoc,onSnapshot,query,orderBy,deleteDoc,doc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -225,23 +241,26 @@ const col=collection(db,"bills");
 
 let last=null;
 
+const monthOrder=[
+"1-2月","3-4月","5-6月",
+"7-8月","9-10月","11-12月"
+];
+
 function init(){
   const nowYear=new Date().getFullYear();
 
-  // 年份自動生成（前後3年）
   for(let y=nowYear-3;y<=nowYear+1;y++){
     let o=document.createElement("option");
     o.value=y;
-    o.textContent=y+" 年";
+    o.textContent=y+"年";
     if(y===nowYear)o.selected=true;
     year.appendChild(o);
   }
 
-  // 月份
-  ["1-2月","3-4月","5-6月","7-8月","9-10月","11-12月"]
-  .forEach((t,i)=>{
+  monthOrder.forEach((t,i)=>{
     let o=document.createElement("option");
-    o.value=t;o.textContent=t;
+    o.value=t;
+    o.textContent=t;
     if(i===Math.floor(new Date().getMonth()/2))o.selected=true;
     month.appendChild(o);
   });
@@ -249,24 +268,16 @@ function init(){
 
 window.calculate=function(){
 let w=+water.value||0,e=+electric.value||0,g=+gas.value||0;
-
 let total=w+e+g;
 
-// 固定費用
-const flat=1000;      // 平面車位
-const manage=8391;    // 管理費
-const scooter=200;    // 機車位
+const flat=1000;
+const manage=8391;
+const scooter=200;
 
-// 基礎費
 let base=total-flat;
-
-// 小孩總池（加管理費）
 let childPool=base+manage;
-
-// 三人平均
 let per=childPool/3;
 
-// 分配邏輯
 let mom=base;
 let brother=per+(scooter/2);
 let me=per-scooter;
@@ -282,19 +293,32 @@ last={
 };
 
 result.innerHTML=`
+<div class="record">
 👩 媽媽：<b>${last.mom}</b><br>
 👨‍🦱 大哥：<b>${last.b1}</b><br>
 👨‍🦱 二哥：<b>${last.b2}</b><br>
 🙋 我：<b>${last.me}</b>
+</div>
 `;
 };
 
 window.saveCloud=()=>last&&addDoc(col,{...last,time:Date.now()});
-window.copyMsg=()=>navigator.clipboard.writeText(`${last.year} ${last.month}\n大哥 ${last.b1}\n二哥 ${last.b2}`);
+
+window.copyMsg=()=>{
+navigator.clipboard.writeText(`${last.year} ${last.month}
+大哥 ${last.b1}
+二哥 ${last.b2}`);
+
+const t=document.getElementById("toast");
+t.classList.add("show");
+setTimeout(()=>t.classList.remove("show"),1200);
+};
+
 window.del=id=>deleteDoc(doc(db,"bills",id));
 
 onSnapshot(query(col,orderBy("time","desc")),snap=>{
-let d=[];snap.forEach(x=>d.push({...x.data(),id:x.id}));render(d);
+let d=[];snap.forEach(x=>d.push({...x.data(),id:x.id}));
+render(d);
 });
 
 function render(data){
@@ -302,7 +326,13 @@ let g={};
 data.forEach(r=>(g[r.year]=g[r.year]||[]).push(r));
 
 list.innerHTML="";
+
 Object.keys(g).sort((a,b)=>b-a).forEach(y=>{
+
+g[y].sort((a,b)=>
+monthOrder.indexOf(a.month)-monthOrder.indexOf(b.month)
+);
+
 list.innerHTML+=`
 <div class="year-block">
 <div class="year-header"
@@ -310,6 +340,7 @@ onclick="this.nextElementSibling.style.display=
 this.nextElementSibling.style.display==='none'?'grid':'none'">
 📅 ${y}
 </div>
+
 <div class="records-grid">
 ${g[y].map(r=>`
 <div class="record">
