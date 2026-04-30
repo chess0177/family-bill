@@ -185,7 +185,7 @@ button{
 <h2>17算錢錢</h2>
 
 <label>年份</label>
-<input id="year" type="number">
+<select id="year"></select>
 
 <label>月份</label>
 <select id="month"></select>
@@ -224,7 +224,18 @@ const col=collection(db,"bills");
 let last=null;
 
 function init(){
-  year.value=new Date().getFullYear();
+  const nowYear=new Date().getFullYear();
+
+  // 年份自動生成（前後3年）
+  for(let y=nowYear-3;y<=nowYear+1;y++){
+    let o=document.createElement("option");
+    o.value=y;
+    o.textContent=y+" 年";
+    if(y===nowYear)o.selected=true;
+    year.appendChild(o);
+  }
+
+  // 月份
   ["1-2月","3-4月","5-6月","7-8月","9-10月","11-12月"]
   .forEach((t,i)=>{
     let o=document.createElement("option");
