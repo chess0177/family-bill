@@ -249,24 +249,42 @@ function init(){
 
 window.calculate=function(){
 let w=+water.value||0,e=+electric.value||0,g=+gas.value||0;
+
 let total=w+e+g;
-let base=total-1000;
-let per=base/3;
-let b=per+100;
+
+// 固定費用
+const flat=1000;      // 平面車位
+const manage=8391;    // 管理費
+const scooter=200;    // 機車位
+
+// 基礎費
+let base=total-flat;
+
+// 小孩總池（加管理費）
+let childPool=base+manage;
+
+// 三人平均
+let per=childPool/3;
+
+// 分配邏輯
+let mom=base;
+let brother=per+(scooter/2);
+let me=per-scooter;
 
 last={
   year:+year.value,
   month:month.value,
   total,
-  mom:total-1000,
-  b1:b,b2:b,
-  me:per-200
+  mom:Math.round(mom),
+  b1:Math.round(brother),
+  b2:Math.round(brother),
+  me:Math.round(me)
 };
 
 result.innerHTML=`
 👩 媽媽：<b>${last.mom}</b><br>
-👨‍🦱 大哥：<b>${b}</b><br>
-👨‍🦱 二哥：<b>${b}</b><br>
+👨‍🦱 大哥：<b>${last.b1}</b><br>
+👨‍🦱 二哥：<b>${last.b2}</b><br>
 🙋 我：<b>${last.me}</b>
 `;
 };
